@@ -54,6 +54,8 @@ const string polishNotation(const string& expr)
 				output.push_back(number[j]);
 				output.push_back('*');
 				output.push_back('+');
+				output.push_back('0');
+				output.push_back('+');
 			}
 
 			if (i + 1 >= size)
@@ -96,7 +98,7 @@ const string polishNotation(const string& expr)
 	return output;
 }
 
-const int calculate(const int& lvalue, const int& rvalue, char& operation)
+const int calculate(const int& lvalue, const int& rvalue, const char& operation)
 {
 	switch (operation)
 	{
@@ -117,23 +119,50 @@ const int calculate(const int& lvalue, const int& rvalue, char& operation)
 	}
 }
 
-const int evaluateRpn(const string input)
+const int evaluateRpn(string input)
 {
+	size_t size = input.size();
 	stack<int> values;
 	int lvalue{}, rvalue{}, result{};
-	for (char symbol : input)
+	for (size_t i = 0; i < size; i++)
 	{
-		if (isDigit(symbol))
+		if (isDigit(input[i]))
 		{
-			values.push(symbol - '0');
+			values.push(input[i] - '0');
 			continue;
 		}
 
-		rvalue = values.top();
-		values.pop();
-		lvalue = values.top();
-		values.pop();
-		result = calculate(lvalue, rvalue, symbol);
+		if (values.size() < 2)
+			break;
+		
+		else
+		{
+			rvalue = values.top();
+			values.pop();
+			lvalue = values.top();
+			values.pop();
+		}
+
+		if (input[i + 1] == '-')
+		{
+			if (input[i] == '-' || (input[i] == '+' && rvalue < 0))
+			{
+				input[i + 1] = '+';
+				result = -calculate(lvalue, abs(rvalue), '+');
+				values.push(result);
+				continue;
+			}
+
+			if (input[i] == '+' && rvalue >= 0)
+			{
+				input[i + 1] = '+';
+				result = -calculate(abs(lvalue), rvalue, '-');
+				values.push(result);
+				continue;
+			}
+		}
+
+		result = calculate(lvalue, rvalue, input[i]);
 		values.push(result);
 	}
 	return values.top();
@@ -341,8 +370,8 @@ void Table::decrease_by_one(const int row, const int column)
 
 int main()
 {
-	//string input = "(2^3+4*(7-2))*2^2^3";
-	string input = "(8*12-101*15)-21";
+	//string input = "(2^3+4*(7-2))*2^2^3"; 8*12-101*15-21
+	string input = "2^3-5*14+66/2-19-123*2-1";
 	string output = polishNotation(input);
 	std::cout << "Input: " << input << std::endl;
 	std::cout << "Polish Notation: " << output << std::endl;
