@@ -95,6 +95,7 @@ const string polishNotation(const string& expr)
 		output.push_back(operators.top());
 		operators.pop();
 	}
+
 	return output;
 }
 
@@ -130,6 +131,15 @@ const double evaluateRpn(string input)
 		{
 			values.push(input[i] - '0');
 			continue;
+		}
+
+		if (values.size() == 1 && input[i] == '-')
+		{
+			if (input[i + 1] == '-')
+				return values.top();
+
+			else
+				return -values.top();
 		}
 
 		if (values.size() < 2)
@@ -359,6 +369,7 @@ void Table::SET(const long int row, const long int column, const string& expr)
 			}
 
 			this->table[i].value = this->calculate_value(expr);
+			this->table[i].expression = expr;
 			return;
 		}
 	}
@@ -610,6 +621,67 @@ const long int Table::get_column(const string& str) const
 	return stoi(number);
 }
 
+const bool Table::check_adress(const string& str) const
+{
+	size_t size = str.size();
+	if (size < 4)
+		return false;
+
+	if (str[0] != 'R' || !isDigit(str[1]) || !isDigit(str[size - 1]))
+		return false;
+
+	bool flagC = false;
+	for (size_t i = 1; i < size; i++)
+	{
+		if (str[i] == ' ')
+			return false;
+
+		if (!isDigit(str[i]) && str[i] != 'C')
+			return false;
+
+		if (!flagC && i == size - 1)
+			return false;
+
+		if (str[i] == 'C')
+			flagC = true;
+	}
+
+	if (!flagC)
+		return false;
+
+	return true;
+}
+
+const bool Table::check_expression(const string& str) const
+{
+	
+	size_t size = str.size();
+	if (size == 0)
+		return false;
+
+	if (size == 1 && str[0] == '"')
+		return false;
+
+	if (size == 2 && str[0] == '"' && str[1] == '"')
+		return false;
+
+	if (size > 2 && str[0] == '"' && str[size - 1] != '"')
+		return false;
+
+	if (size > 2 && str[0] != '"' && str[size - 1] == '"')
+		return false;
+
+	for (size_t i = 0; i < size; i++)
+	{
+		if (!isDigit(str[i]) && str[i] != ' ' && str[0] != '"')
+			if (str[i] != 'R' && str[i] != 'C' && str[i] != '(' && str[i] != ')')
+				if (str[i] != '+' && str[i] != '-' && str[i] != '*' && str[i] != '/' && str[i] != '^')
+			return false;
+	}
+
+	return true;
+}
+
 void Table::execute_proccess()
 {
 	string command{};
@@ -619,6 +691,7 @@ void Table::execute_proccess()
 	string expression{};
 	string command_str{};
 	long int row, column;
+	std::cout << "Enter a command or type HELP to see the command list." << std::endl;
 	while (command != "EXIT")
 	{
 		std::cout << "-------------------------------------------------------------------\n";
@@ -628,10 +701,32 @@ void Table::execute_proccess()
 		command2 = this->get_string2(command_str);
 		command3 = this->get_string3(command_str);
 	
+		if (command == "HELP")
+		{
+			std::cout << "> SET <adress> <expression>\n";
+			std::cout << "> PRINT VAL <adress>\n";
+			std::cout << "> PRINT EXPR <adress>\n";
+			std::cout << "> PRINT VAL ALL\n";
+			std::cout << "> PRINT EXPR ALL\n";
+			std::cout << "> ++ <adress>\n";
+			std::cout << "> -- <adress>\n";
+			continue;
+		}
+	
 		if (command == "SET")
 		{
-			adress = this->get_string2(command_str);
-			expression = this->get_string3(command_str);
+			adress = command2;
+			if (!this->check_adress(adress))
+			{
+				std::cout << "Incorrect adress input!" << std::endl;
+				continue;
+			}
+			expression = command3;
+			if (!this->check_expression(expression))
+			{
+				std::cout << "Incorrect expression!" << std::endl;
+				continue;
+			}
 			row = this->get_row(adress);
 			column = this->get_column(adress);
 			this->SET(row, column, expression);
@@ -640,7 +735,12 @@ void Table::execute_proccess()
 
 		if (command == "PRINT" && command2 == "VAL" && command3 != "ALL")
 		{
-			adress = this->get_string3(command_str);
+			adress = command3;
+			if (!this->check_adress(adress))
+			{
+				std::cout << "Incorrect adress input!" << std::endl;
+				continue;
+			}
 			row = this->get_row(adress);
 			column = this->get_column(adress);
 			this->PRINT_VAL(row, column);
@@ -650,7 +750,12 @@ void Table::execute_proccess()
 
 		if (command == "PRINT" && command2 == "EXPR" && command3 != "ALL")
 		{
-			adress = this->get_string3(command_str);
+			adress = command3;
+			if (!this->check_adress(adress))
+			{
+				std::cout << "Incorrect adress input!" << std::endl;
+				continue;
+			}
 			row = this->get_row(adress);
 			column = this->get_column(adress);
 			this->PRINT_EXPR(row, column);
@@ -672,7 +777,12 @@ void Table::execute_proccess()
 
 		if (command == "++")
 		{
-			adress = this->get_string2(command_str);
+			adress = command2;
+			if (!this->check_adress(adress))
+			{
+				std::cout << "Incorrect adress input!" << std::endl;
+				continue;
+			}
 			row = this->get_row(adress);
 			column = this->get_column(adress);
 			this->increase_by_one(row, column);
@@ -681,7 +791,12 @@ void Table::execute_proccess()
 
 		if (command == "--")
 		{
-			adress = this->get_string2(command_str);
+			adress = command2;
+			if (!this->check_adress(adress))
+			{
+				std::cout << "Incorrect adress input!" << std::endl;
+				continue;
+			}
 			row = this->get_row(adress);
 			column = this->get_column(adress);
 			this->decrease_by_one(row, column);

@@ -43,5 +43,7 @@ public:
 	string get_string3(const string& str) const;
 	const long int get_row(const string& str) const;
 	const long int get_column(const string& str) const;
+	const bool check_adress(const string& str) const;
+	const bool check_expression(const string& str) const;
 	void execute_proccess();
 };
