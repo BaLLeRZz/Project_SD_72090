@@ -8,7 +8,7 @@ using std::vector;
 
 struct Node
 {
-	int value{};
+	double value{};
 	string expression{};
 	long int row{};
 	long int column{};
@@ -24,24 +24,24 @@ private:
 	long int max_columns{};
 public:
 	Table() = default;
-	bool exists(const int row, const int column) const; // raboti
-	Node get_node(const int row, const int column); // raboti
-	int find_value(const int row, const int column) const; // raboti
-	string fix_expr(string expr); // raboti
-	int calculate_value(const string& expr); // raboti
-	void SET(const int row, const int column, const string& expr); // raboti
-	void PRINT_VAL(const int row, const int column); // raboti
-	void PRINT_EXPR(const int row, const int column); // raboti
-	void PRINT_VAL_ALL(); // raboti
-	void PRINT_EXPR_ALL(); // raboti
+	const bool exists(const long int row, const long int column) const;
+	Node get_node(const long int row, const long int column);
+	const double find_value(const long int row, const long int column) const;
+	string fix_expr(string expr);
+	const double calculate_value(const string& expr);
+	void SET(const long int row, const long int column, const string& expr);
+	void PRINT_VAL(const long int row, const long int column);
+	void PRINT_EXPR(const long int row, const long int column);
+	void PRINT_VAL_ALL();
+	void PRINT_EXPR_ALL();
 	//save
 	//load
-	void increase_by_one(const int row, const int column); // ++
-	void decrease_by_one(const int row, const int column); // --
-	string get_string1(const string str); // raboti
-	string get_string2(const string str); // raboti
-	string get_string3(const string str); // raboti
-	long int get_row(const string str); // raboti
-	long int get_column(const string str); // raboti
+	void increase_by_one(const long int row, const long int column); // ++
+	void decrease_by_one(const long int row, const long int column); // --
+	string get_string1(const string& str) const;
+	string get_string2(const string& str) const;
+	string get_string3(const string& str) const;
+	const long int get_row(const string& str) const;
+	const long int get_column(const string& str) const;
 	void execute_proccess();
 };

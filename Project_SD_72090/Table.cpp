@@ -98,7 +98,7 @@ const string polishNotation(const string& expr)
 	return output;
 }
 
-const int calculate(const int& lvalue, const int& rvalue, const char& operation)
+const double calculate(const double& lvalue, const double& rvalue, const char& operation)
 {
 	switch (operation)
 	{
@@ -119,11 +119,11 @@ const int calculate(const int& lvalue, const int& rvalue, const char& operation)
 	}
 }
 
-const int evaluateRpn(string input)
+const double evaluateRpn(string input)
 {
 	size_t size = input.size();
-	stack<int> values;
-	int lvalue{}, rvalue{}, result{};
+	stack<double> values;
+	double lvalue{}, rvalue{}, result{};
 	for (size_t i = 0; i < size; i++)
 	{
 		if (isDigit(input[i]))
@@ -187,7 +187,7 @@ bool Node::is_number() const
 	return true;
 }
 
-bool Table::exists(const int row, const int column) const
+const bool Table::exists(const long int row, const long int column) const
 {
 	size_t size = this->table.size();
 	for (size_t i = 0; i < size; i++)
@@ -197,7 +197,7 @@ bool Table::exists(const int row, const int column) const
 	return false;
 }
 
-Node Table::get_node(const int row, const int column)
+Node Table::get_node(const long int row, const long int column)
 {
 	size_t size = this->table.size();
 	for (size_t i = 0; i < size; i++)
@@ -207,7 +207,7 @@ Node Table::get_node(const int row, const int column)
 	return Node();
 }
 
-int Table::find_value(const int row, const int column) const
+const double Table::find_value(const long int row, const long int column) const
 {
 	size_t size = this->table.size();
 	for (size_t i = 0; i < size; i++)
@@ -245,7 +245,7 @@ string Table::fix_expr(string expr)
 	return expr;
 }
 
-int Table::calculate_value(const string& expr)
+const double Table::calculate_value(const string& expr)
 {
 	vector<int> nodes_values;
 	size_t size = expr.size(); // (R23C31 - 5) * 12 + R1C0 -> (3-5)*12+6
@@ -332,7 +332,7 @@ int Table::calculate_value(const string& expr)
 	return evaluateRpn(polish_notation);
 }
 
-void Table::SET(const int row, const int column, const string& expr)
+void Table::SET(const long int row, const long int column, const string& expr)
 {
 	if (row <= 0 || column <= 0)
 	{
@@ -380,7 +380,7 @@ void Table::SET(const int row, const int column, const string& expr)
 	std::cout << "Everything was set successfully!" << std::endl;
 }
 
-void Table::PRINT_VAL(const int row, const int column)
+void Table::PRINT_VAL(const long int row, const long int column)
 {
 	if (this->exists(row, column))
 	{
@@ -394,7 +394,7 @@ void Table::PRINT_VAL(const int row, const int column)
 	std::cout << "0";
 }
 
-void Table::PRINT_EXPR(const int row, const int column)
+void Table::PRINT_EXPR(const long int row, const long int column)
 {
 	if (this->exists(row, column))
 	{
@@ -431,7 +431,7 @@ void Table::PRINT_EXPR_ALL()
 	}
 }
 
-void Table::increase_by_one(const int row, const int column)
+void Table::increase_by_one(const long int row, const long int column)
 {
 	if (row > this->max_rows)
 		this->max_rows = row;
@@ -439,24 +439,33 @@ void Table::increase_by_one(const int row, const int column)
 	if (column > this->max_columns)
 		this->max_columns = column;
 	
-	if (this->exists(row, column))
+	size_t size = this->table.size();
+	for (size_t i = 0; i < size; i++)
 	{
-		//this->get_node(row - 1, column - 1).value++;
-		std::cout << "Successfully increased!" << std::endl;
-		return;
+		if (this->table[i].row == row && this->table[i].column == column)
+		{
+			if (this->table[i].expression[0] == '"')
+			{
+				std::cout << "Cannot increase the value of a text box!" << std::endl;
+				return;
+			}
+
+			this->table[i].value++;
+			std::cout << "Value increased successfully!" << std::endl;
+			return;
+		}
 	}
 	
-
 	Node node;
 	node.row = row;
 	node.column = column;
 	node.value = 1;
 	node.expression = std::to_string(node.value);
 	this->table.push_back(node);
-	std::cout << "Successfully increased!" << std::endl;
+	std::cout << "Value increased successfully!" << std::endl;
 }
 
-void Table::decrease_by_one(const int row, const int column)
+void Table::decrease_by_one(const long int row, const long int column)
 {
 	if (row > this->max_rows)
 		this->max_rows = row;
@@ -469,8 +478,14 @@ void Table::decrease_by_one(const int row, const int column)
 	{
 		if (this->table[i].row == row && this->table[i].column == column)
 		{
+			if (this->table[i].expression[0] == '"')
+			{
+				std::cout << "Cannot decrease the value of a text box!" << std::endl;
+				return;
+			}
+
 			this->table[i].value--;
-			std::cout << "Successfully decreased!" << std::endl;
+			std::cout << "Value decreased successfully!" << std::endl;
 			return;
 		}
 	}
@@ -481,10 +496,10 @@ void Table::decrease_by_one(const int row, const int column)
 	node.value = -1;
 	node.expression = std::to_string(node.value);
 	this->table.push_back(node);
-	std::cout << "Successfully decreased!" << std::endl;
+	std::cout << "Value decreased successfully!" << std::endl;
 }
 
-string Table::get_string1(const string str)
+string Table::get_string1(const string& str) const
 {
 	size_t size = str.size();
 	string command{};
@@ -506,7 +521,7 @@ string Table::get_string1(const string str)
 	return command;
 }
 
-string Table::get_string2(const string str)
+string Table::get_string2(const string& str) const
 {
 	size_t size = str.size();
 	string adress{};
@@ -529,7 +544,7 @@ string Table::get_string2(const string str)
 	return adress;
 }
 
-string Table::get_string3(const string str)
+string Table::get_string3(const string& str) const
 {
 	string expression{};
 	size_t size = str.size();
@@ -560,7 +575,7 @@ string Table::get_string3(const string str)
 	return expression;
 }
 
-long int Table::get_row(const string str)
+const long int Table::get_row(const string& str) const
 {
 	string number{};
 	size_t size = str.size();
@@ -575,7 +590,7 @@ long int Table::get_row(const string str)
 	return stoi(number);
 }
 
-long int Table::get_column(const string str)
+const long int Table::get_column(const string& str) const
 {
 	string number{};
 	size_t size = str.size();
