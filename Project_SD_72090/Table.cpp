@@ -619,6 +619,42 @@ const long int Table::get_column(const string& str) const
 	return stoi(number);
 }
 
+const long int Table::get_row_relative(const string& str) const
+{
+	string number{};
+	size_t size = str.size();
+	for (size_t i = 2; i < size; i++)
+	{
+		if (str[i] == ']')
+			return stoi(number);
+
+		number += str[i];
+	}
+
+	return stoi(number);
+}
+
+const long int Table::get_column_relative(const string& str) const
+{
+	string number{};
+	size_t size = str.size();
+	bool flag = false;
+	for (size_t i = 0; i < size; i++)
+	{
+		if (str[i] == 'C')
+		{
+			flag = true;
+			i += 1;
+			continue;
+		}
+
+		if (flag && str[i] != ']')
+			number += str[i];
+	}
+
+	return stoi(number);
+}
+
 const bool Table::exists(const long int row, const long int column) const
 {
 	size_t size = this->table.size();
@@ -779,10 +815,7 @@ void Table::execute_proccess()
 		command = this->get_string1(command_str);
 		command2 = this->get_string2(command_str);
 		command3 = this->get_string3(command_str);
-		if (this->is_relative(command2))
-			std::cout << "yes";
-		else
-			std::cout << "no";
+		
 		return;
 		if (command == "HELP")
 		{

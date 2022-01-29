@@ -41,6 +41,8 @@ public:
 	const string get_string3(const string& str) const;
 	const long int get_row(const string& str) const;
 	const long int get_column(const string& str) const;
+	const long int get_row_relative(const string& str) const;
+	const long int get_column_relative(const string& str) const;
 	const bool exists(const long int row, const long int column) const;
 	const bool check_adress(const string& str) const;
 	const bool check_expression(const string& str) const;
