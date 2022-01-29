@@ -25,8 +25,8 @@ public:
 	Table() = default;
 	Node get_node(const long int row, const long int column);
 	const double find_value(const long int row, const long int column) const;
-	const double calculate_value(const string& expr);
-	void SET(const long int row, const long int column, const string& expr);
+	const double calculate_value(const string& expr, const string& current_node);
+	void SET(const long int row, const long int column, const string& expr, const string& current_node);
 	void PRINT_VAL(const long int row, const long int column);
 	void PRINT_EXPR(const long int row, const long int column);
 	void PRINT_VAL_ALL();
@@ -44,7 +44,6 @@ public:
 	const long int get_row_relative(const string& str) const;
 	const long int get_column_relative(const string& str) const;
 	const bool exists(const long int row, const long int column) const;
-	const bool check_adress(const string& str) const;
 	const bool check_expression(const string& str) const;
 	const bool is_absolute(const string& str) const;
 	const bool is_relative(const string& str) const;

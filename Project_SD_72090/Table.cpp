@@ -145,7 +145,7 @@ const double evaluateRpn(string input)
 
 		if (values.size() < 2)
 			break;
-		
+
 		else
 		{
 			rvalue = values.top();
@@ -200,48 +200,113 @@ const double Table::find_value(const long int row, const long int column) const
 	return 0;
 }
 
-const double Table::calculate_value(const string& expr)
+const double Table::calculate_value(const string& expr, const string& current_node)
 {
 	// (R23C31 - 5) * 12 + R1C0 -> (3-5)*12+6
+	vector<string> nodes;
+	string node_string{};
 	size_t size = expr.size();
-	vector<int> nodes_values;
-	int value = 0;
-	long int row{}, column{};
-	bool flagR = false, flagC = false, flagHelp = true;
-	string number{};
+	bool flagR = false, flagC = false, flagHelp = true, flagRelative = false;
 	for (size_t i = 0; i < size; i++)
 	{
 		if (expr[i] == 'R' || flagR)
 		{
 			flagR = true;
-			if (isDigit(expr[i]) && !flagC)
-				number += expr[i];
+			if (expr[i] == '[')
+				flagRelative = true;
+
+			if (expr[i] == ']')
+				flagRelative = false;
+
+			if ((isDigit(expr[i]) || expr[i] == 'R' || expr[i] == '[' || expr[i] == ']' || expr[i] == '-') && !flagC)
+				node_string += expr[i];
 
 			if (expr[i] == 'C' || flagC)
 			{
 				flagC = true;
 				if (flagHelp)
 				{
-					row = stoi(number);
-					number = "";
+					node_string += expr[i];
 					flagHelp = false;
 					continue;
 				}
 
-				if (isDigit(expr[i]))
-					number += expr[i];
+				if (isDigit(expr[i]) || expr[i] == '[' || expr[i] == ']' || (expr[i] == '-' && flagRelative))
+				{
+					node_string += expr[i];
+					if (i + 1 < size)
+						continue;
+				}
 			}
 
-			if (!isDigit(expr[i]) && flagR && flagC || (isDigit(expr[i]) && i + 1 == size))
+			if (!isDigit(expr[i]) && expr[i] != ']' && flagR && flagC || ((isDigit(expr[i]) || expr[i] == ']') && i + 1 == size))
 			{
-				column = stoi(number);
-				number = "";
 				flagR = false;
 				flagC = false;
 				flagHelp = true;
-				nodes_values.push_back(this->find_value(row, column));
+				flagRelative = false;
+				nodes.push_back(node_string);
+				node_string = "";
 			}
 		}
+	}
+
+	vector<int> nodes_values{};
+	size_t nodes_size = nodes.size();
+	long int row{}, column{};
+	long int row_current{}, column_current{};
+	for (size_t i = 0; i < nodes_size; i++)
+	{
+		if (this->is_absolute(nodes[i]))
+		{
+			row = this->get_row(nodes[i]);
+			column = this->get_column(nodes[i]);
+			if (row > this->max_rows)
+				this->max_rows = row;
+
+			if (column > this->max_columns)
+				this->max_columns = column;
+
+			if (this->exists(row, column))
+				nodes_values.push_back(this->get_node(row, column).value);
+
+			else
+				nodes_values.push_back(0);
+			
+			continue;
+		}
+		
+		if (this->is_relative(nodes[i]))
+		{
+			row = this->get_row_relative(nodes[i]);
+			column = this->get_column_relative(nodes[i]);
+			row_current = this->get_row(current_node);
+			column_current = this->get_column(current_node);
+			if (row_current + row <= 0 || column_current + column <= 0)
+			{
+				std::cout << "Incorrect row or column input in a relative adress!" << std::endl;
+				std::cout << "The value is set to 0" << std::endl;
+				return 0;
+			}
+
+			if (row_current + row > this->max_rows)
+				this->max_rows = row_current + row;
+
+			if (column_current + column > this->max_columns)
+				this->max_columns = column_current + column;
+
+			if (this->exists(row_current + row, column_current + column))
+				nodes_values.push_back(this->get_node(row_current + row, column_current + column).value);
+
+			else
+				nodes_values.push_back(0);
+
+			continue;
+		}
+
+		std::cout << "Incorrect adress input in the expression!" << std::endl;
+		std::cout << "The value is set to 0" << std::endl;
+		return 0;
 	}
 
 	string fixed_expr{};
@@ -263,7 +328,21 @@ const double Table::calculate_value(const string& expr)
 			if (expr[i] == 'C' || flagC)
 			{
 				flagC = true;
-				if (!isDigit(expr[i]) && expr[i] != 'C')
+				if (expr[i] == 'C' && expr[i + 1] == '[')
+				{
+					if (expr[i + 2] == '-')
+					{
+						i += 2;
+						continue;
+					}
+					else
+					{
+						i += 1;
+						continue;
+					}
+				}
+
+				if (!isDigit(expr[i]) && expr[i] != 'C' && expr[i] != ']')
 				{
 					flagR = false;
 					flagC = false;
@@ -284,11 +363,14 @@ const double Table::calculate_value(const string& expr)
 		return 0;
 	}
 
+	nodes.clear();
+	nodes_values.clear();
+	node_string.clear();
 	string polish_notation = polishNotation(fixed_expr);
 	return evaluateRpn(polish_notation);
 }
 
-void Table::SET(const long int row, const long int column, const string& expr)
+void Table::SET(const long int row, const long int column, const string& expr, const string& current_node)
 {
 	if (row <= 0 || column <= 0)
 	{
@@ -314,7 +396,7 @@ void Table::SET(const long int row, const long int column, const string& expr)
 				return;
 			}
 
-			this->table[i].value = this->calculate_value(expr);
+			this->table[i].value = this->calculate_value(expr, current_node);
 			this->table[i].expression = expr;
 			return;
 		}
@@ -328,13 +410,11 @@ void Table::SET(const long int row, const long int column, const string& expr)
 	{
 		node.value = 0;
 		this->table.push_back(node);
-		std::cout << "Everything was set successfully!" << std::endl;
 		return;
 	}
 
-	node.value = this->calculate_value(expr);
+	node.value = this->calculate_value(expr, current_node);
 	this->table.push_back(node);
-	std::cout << "Everything was set successfully!" << std::endl;
 }
 
 void Table::PRINT_VAL(const long int row, const long int column)
@@ -353,7 +433,7 @@ void Table::PRINT_VAL(const long int row, const long int column)
 			std::cout << this->get_node(row, column).value;
 		return;
 	}
-	
+
 	std::cout << "0";
 }
 
@@ -413,7 +493,7 @@ void Table::increase_by_one(const long int row, const long int column)
 
 	if (column > this->max_columns)
 		this->max_columns = column;
-	
+
 	size_t size = this->table.size();
 	for (size_t i = 0; i < size; i++)
 	{
@@ -430,7 +510,7 @@ void Table::increase_by_one(const long int row, const long int column)
 			return;
 		}
 	}
-	
+
 	Node node;
 	node.row = row;
 	node.column = column;
@@ -489,6 +569,17 @@ const string Table::fix_expr(string expr)
 		if (expr[i] == '-' && expr[i + 1] == '-')
 		{
 			expr[i + 1] = '+';
+			for (int j = i; j > 0; j--)
+				expr[j] = expr[j - 1];
+
+			for (size_t k = 1; k < size; k++)
+				new_expr += expr[k];
+
+			continue;
+		}
+
+		if (expr[i] == '+' && expr[i + 1] == '-')
+		{
 			for (int j = i; j > 0; j--)
 				expr[j] = expr[j - 1];
 
@@ -665,17 +756,9 @@ const bool Table::exists(const long int row, const long int column) const
 	return false;
 }
 
-const bool Table::check_adress(const string& str) const
-{
-	if (!this->is_absolute(str) && !this->is_relative(str))
-		return false;
-
-	return true;
-}
-
 const bool Table::check_expression(const string& str) const
 {
-	
+
 	size_t size = str.size();
 	if (size == 0)
 		return false;
@@ -693,7 +776,7 @@ const bool Table::check_expression(const string& str) const
 		return false;
 
 	for (size_t i = 0; i < size; i++)
-		if (!isDigit(str[i]) && str[i] != ' ' && str[0] != '"')
+		if (!isDigit(str[i]) && str[i] != ' ' && str[0] != '"' && str[i] != '[' && str[i] != ']')
 			if (str[i] != 'R' && str[i] != 'C' && str[i] != '(' && str[i] != ')')
 				if (str[i] != '+' && str[i] != '-' && str[i] != '*' && str[i] != '/' && str[i] != '^')
 					return false;
@@ -815,8 +898,7 @@ void Table::execute_proccess()
 		command = this->get_string1(command_str);
 		command2 = this->get_string2(command_str);
 		command3 = this->get_string3(command_str);
-		
-		return;
+	
 		if (command == "HELP")
 		{
 			std::cout << "> SET <adress> <expression>\n";
@@ -828,11 +910,11 @@ void Table::execute_proccess()
 			std::cout << "> -- <adress>\n";
 			continue;
 		}
-	
+
 		if (command == "SET")
 		{
 			adress = command2;
-			if (!this->check_adress(adress))
+			if (!this->is_absolute(adress))
 			{
 				std::cout << "Incorrect adress input!" << std::endl;
 				continue;
@@ -845,14 +927,14 @@ void Table::execute_proccess()
 			}
 			row = this->get_row(adress);
 			column = this->get_column(adress);
-			this->SET(row, column, expression);
+			this->SET(row, column, expression, adress);
 			continue;
 		}
 
 		if (command == "PRINT" && command2 == "VAL" && command3 != "ALL")
 		{
 			adress = command3;
-			if (!this->check_adress(adress))
+			if (!this->is_absolute(adress))
 			{
 				std::cout << "Incorrect adress input!" << std::endl;
 				continue;
@@ -867,7 +949,7 @@ void Table::execute_proccess()
 		if (command == "PRINT" && command2 == "EXPR" && command3 != "ALL")
 		{
 			adress = command3;
-			if (!this->check_adress(adress))
+			if (!this->is_absolute(adress))
 			{
 				std::cout << "Incorrect adress input!" << std::endl;
 				continue;
@@ -894,7 +976,7 @@ void Table::execute_proccess()
 		if (command == "++")
 		{
 			adress = command2;
-			if (!this->check_adress(adress))
+			if (!this->is_absolute(adress))
 			{
 				std::cout << "Incorrect adress input!" << std::endl;
 				continue;
@@ -908,7 +990,7 @@ void Table::execute_proccess()
 		if (command == "--")
 		{
 			adress = command2;
-			if (!this->check_adress(adress))
+			if (!this->is_absolute(adress))
 			{
 				std::cout << "Incorrect adress input!" << std::endl;
 				continue;
@@ -922,7 +1004,7 @@ void Table::execute_proccess()
 		if (command == "EXIT")
 			break;
 
-		std::cout << "Invalid Input!" << std::endl;
+		std::cout << "Invalid command input!" << std::endl;
 	}
 }
 
