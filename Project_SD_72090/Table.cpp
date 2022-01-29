@@ -203,6 +203,9 @@ const double Table::find_value(const long int row, const long int column) const
 const double Table::calculate_value(const string& expr, const string& current_node)
 {
 	// (R23C31 - 5) * 12 + R1C0 -> (3-5)*12+6
+	if (expr[0] == '"')
+		return 0;
+
 	vector<string> nodes;
 	string node_string{};
 	size_t size = expr.size();
@@ -385,21 +388,31 @@ void Table::SET(const long int row, const long int column, const string& expr, c
 		this->max_columns = column;
 
 	size_t size = this->table.size();
+	bool changed_value = false;
 	for (size_t i = 0; i < size; i++)
 	{
 		if (this->table[i].row == row && this->table[i].column == column)
 		{
+			changed_value = true;
 			if (expr[0] == '"')
 			{
 				this->table[i].value = 0;
 				this->table[i].expression = expr;
-				return;
+				break;
 			}
 
 			this->table[i].value = this->calculate_value(expr, current_node);
 			this->table[i].expression = expr;
-			return;
+			break;
 		}
+	}
+
+	if (changed_value)
+	{
+		for (size_t i = 0; i < size; i++)
+			this->table[i].value = this->calculate_value(this->table[i].expression, current_node);
+
+		return;
 	}
 
 	Node node;
@@ -427,6 +440,15 @@ void Table::PRINT_VAL(const long int row, const long int column)
 
 	if (this->exists(row, column))
 	{
+		if (this->is_absolute(this->get_node(row, column).expression) || this->is_relative(this->get_node(row, column).expression))
+		{
+			if (this->get_node(this->get_row(this->get_node(row, column).expression), this->get_column(this->get_node(row, column).expression)).expression[0] == '"')
+			{
+				std::cout << this->get_node(this->get_row(this->get_node(row, column).expression), this->get_column(this->get_node(row, column).expression)).expression;
+				return;
+			}
+		}
+
 		if (this->get_node(row, column).expression[0] == '"')
 			std::cout << this->get_node(row, column).expression;
 		else
@@ -505,6 +527,15 @@ void Table::increase_by_one(const long int row, const long int column)
 				return;
 			}
 
+			if (this->is_absolute(this->get_node(row, column).expression) || this->is_relative(this->get_node(row, column).expression))
+			{
+				if (this->get_node(this->get_row(this->get_node(row, column).expression), this->get_column(this->get_node(row, column).expression)).expression[0] == '"')
+				{
+					std::cout << "Cannot increase the value of a text box!" << std::endl;
+					return;
+				}
+			}
+
 			this->table[i].value++;
 			std::cout << "Value increased successfully!" << std::endl;
 			return;
@@ -543,6 +574,15 @@ void Table::decrease_by_one(const long int row, const long int column)
 			{
 				std::cout << "Cannot decrease the value of a text box!" << std::endl;
 				return;
+			}
+
+			if (this->is_absolute(this->get_node(row, column).expression) || this->is_relative(this->get_node(row, column).expression))
+			{
+				if (this->get_node(this->get_row(this->get_node(row, column).expression), this->get_column(this->get_node(row, column).expression)).expression[0] == '"')
+				{
+					std::cout << "Cannot decrease the value of a text box!" << std::endl;
+					return;
+				}
 			}
 
 			this->table[i].value--;
@@ -648,9 +688,18 @@ const string Table::get_string3(const string& str) const
 {
 	string expression{};
 	size_t size = str.size();
-	bool flagS1 = false, flagS2 = false;
+	bool flagS1 = false, flagS2 = false, text_box = false;
 	for (size_t i = 0; i < size; i++)
 	{
+		if (str[i] == '"')
+			text_box = true;
+
+		if (flagS1 && flagS2 && text_box)
+		{
+			expression += str[i];
+			continue;
+		}
+
 		if (str[i] == ' ')
 			continue;
 
@@ -879,6 +928,12 @@ const bool Table::is_relative(const string& str) const
 
 	return true;
 }
+
+//const bool Table::if_function(const string& condition, const int value_true, const int value_false) const
+//{
+//	// if (a < b; 2; 3)
+//
+//}
 
 void Table::execute_proccess()
 {
