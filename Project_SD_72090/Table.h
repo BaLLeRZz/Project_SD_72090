@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 using std::string;
 using std::vector;
@@ -31,7 +32,7 @@ public:
 	void PRINT_EXPR(const long int row, const long int column);
 	void PRINT_VAL_ALL();
 	void PRINT_EXPR_ALL();
-	//save
+	void SAVE(const string& str);
 	//load
 	void increase_by_one(const long int row, const long int column); // ++
 	void decrease_by_one(const long int row, const long int column); // --
@@ -39,6 +40,7 @@ public:
 	const string get_string1(const string& str) const;
 	const string get_string2(const string& str) const;
 	const string get_string3(const string& str) const;
+	const string get_file_name(const string& str) const;
 	const long int get_row(const string& str) const;
 	const long int get_column(const string& str) const;
 	const long int get_row_relative(const string& str) const;

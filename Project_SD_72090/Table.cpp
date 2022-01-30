@@ -410,7 +410,7 @@ void Table::SET(const long int row, const long int column, const string& expr, c
 	if (changed_value)
 	{
 		for (size_t i = 0; i < size; i++)
-			this->table[i].value = this->calculate_value(this->table[i].expression, current_node);
+			this->table[i].value = this->calculate_value(this->table[i].expression, "R" + std::to_string(this->table[i].row) + "C" + std::to_string(this->table[i].column));
 
 		return;
 	}
@@ -509,6 +509,31 @@ void Table::PRINT_EXPR_ALL()
 		}
 		std::cout << std::endl;
 	}
+}
+
+void Table::SAVE(const string& str)
+{
+	std::ofstream saveData(str, std::ios::beg);
+	if (saveData.is_open())
+	{
+		for (size_t i = 1; i <= this->max_rows; i++)
+		{
+			for (size_t j = 1; j <= this->max_columns; j++)
+			{
+				if (this->exists(i, j))
+					saveData << this->get_node(i, j).expression << " ; ";
+
+				else
+					saveData << "0 ; ";
+			}
+
+			saveData << std::endl;
+		}
+
+		std::cout << "Data Saved successfully!" << std::endl;
+	}
+	else
+		std::cout << "File did not open!" << std::endl;
 }
 
 void Table::increase_by_one(const long int row, const long int column)
@@ -749,6 +774,36 @@ const string Table::get_string3(const string& str) const
 	return expression;
 }
 
+const string Table::get_file_name(const string& str) const
+{
+	string file_name{};
+	size_t size = str.size();
+	bool flagS1 = false, flagS2 = false;;
+	for (size_t i = 0; i < size; i++)
+	{
+		if (flagS2)
+		{
+			file_name += str[i];
+			continue;
+		}
+
+		if (str[i] != ' ' && !flagS1)
+		{
+			flagS1 = true;
+			i += this->get_string1(str).size() - 1;
+			continue;
+		}
+
+		if (str[i] != ' ' && flagS1)
+		{
+			flagS2 = true;
+			file_name += str[i];
+		}
+	}
+
+	return file_name;
+}
+
 const long int Table::get_row(const string& str) const
 {
 	string number{};
@@ -967,6 +1022,7 @@ void Table::execute_proccess()
 	string command3{};
 	string adress{};
 	string expression{};
+	string file_name{};
 	string command_str{};
 	long int row, column;
 	std::cout << "Enter a command or type HELP to see the command list." << std::endl;
@@ -978,7 +1034,7 @@ void Table::execute_proccess()
 		command = this->get_string1(command_str);
 		command2 = this->get_string2(command_str);
 		command3 = this->get_string3(command_str);
-	
+		
 		if (command == "HELP")
 		{
 			std::cout << "> SET <adress> <expression>\n";
@@ -1050,6 +1106,13 @@ void Table::execute_proccess()
 		if (command == "PRINT" && command2 == "EXPR" && command3 == "ALL")
 		{
 			this->PRINT_EXPR_ALL();
+			continue;
+		}
+
+		if (command == "SAVE")
+		{
+			file_name = this->get_file_name(command_str);
+			this->SAVE(file_name);
 			continue;
 		}
 
