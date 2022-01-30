@@ -33,7 +33,7 @@ public:
 	void PRINT_VAL_ALL();
 	void PRINT_EXPR_ALL();
 	void SAVE(const string& str);
-	//load
+	void LOAD(const string& str);
 	void increase_by_one(const long int row, const long int column); // ++
 	void decrease_by_one(const long int row, const long int column); // --
 	const string fix_expr(string expr);

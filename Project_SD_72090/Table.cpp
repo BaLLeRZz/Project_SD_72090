@@ -438,6 +438,12 @@ void Table::PRINT_VAL(const long int row, const long int column)
 		return;
 	}
 
+	if (row > this->max_rows)
+		this->max_rows = row;
+
+	if (column > this->max_columns)
+		this->max_columns = column;
+
 	if (this->exists(row, column))
 	{
 		if (this->is_absolute(this->get_node(row, column).expression))
@@ -476,6 +482,12 @@ void Table::PRINT_EXPR(const long int row, const long int column)
 		return;
 	}
 
+	if (row > this->max_rows)
+		this->max_rows = row;
+
+	if (column > this->max_columns)
+		this->max_columns = column;
+
 	if (this->exists(row, column))
 	{
 		std::cout << this->get_node(row, column).expression;
@@ -487,6 +499,13 @@ void Table::PRINT_EXPR(const long int row, const long int column)
 
 void Table::PRINT_VAL_ALL()
 {
+	if (this->max_rows == 0 && this->max_columns == 0)
+	{
+		this->PRINT_VAL(1, 1);
+		std::cout << " ; " << std::endl;
+		return;
+	}
+
 	for (size_t i = 1; i <= this->max_rows; i++)
 	{
 		for (size_t j = 1; j <= this->max_columns; j++)
@@ -500,6 +519,13 @@ void Table::PRINT_VAL_ALL()
 
 void Table::PRINT_EXPR_ALL()
 {
+	if (this->max_rows == 0 && this->max_columns == 0)
+	{
+		this->PRINT_EXPR(1, 1);
+		std::cout << " ; " << std::endl;
+		return;
+	}
+
 	for (size_t i = 1; i <= this->max_rows; i++)
 	{
 		for (size_t j = 1; j <= this->max_columns; j++)
@@ -531,6 +557,72 @@ void Table::SAVE(const string& str)
 		}
 
 		std::cout << "Data Saved successfully!" << std::endl;
+	}
+	else
+		std::cout << "File did not open!" << std::endl;
+}
+
+void Table::LOAD(const string& str)
+{
+	std::ifstream loadData(str, std::ios::beg);
+	if (loadData.is_open())
+	{
+		string data{};
+		char symbol{};
+		while (!loadData.eof())
+		{
+			loadData.get(symbol);
+			data += symbol;
+		}
+		size_t size = data.size();
+		string node_expr{};
+		Node node;
+		long int row = 1, column = 1;
+		data[size - 1] = '\0';
+		for (size_t i = 0; i < size - 1; i++)
+		{
+			if (data[i] == '\n')
+			{
+				row++;
+				if (data[i + 1] != '\0')
+					column = 1;
+
+				continue;
+			}
+
+			if (data[i] == ';')
+			{
+				column++;
+				i += 1;
+				continue;
+			}
+
+			node_expr += data[i];
+			if (data[i + 2] == ';')
+			{
+				if (node_expr == "0")
+				{
+					node_expr = "";
+					i += 1;
+					continue;
+				}
+
+				node.row = row;
+				node.column = column;
+				node.expression = node_expr;
+				this->table.push_back(node);
+				node_expr = "";
+				i += 1;
+			}
+		}
+
+		this->max_rows = row - 1;
+		this->max_columns = column - 1;
+		size = this->table.size();
+		for (size_t i = 0; i < size; i++)
+			this->table[i].value = this->calculate_value(this->table[i].expression, "R" + std::to_string(this->table[i].row) + "C" + std::to_string(this->table[i].column));
+		
+		std::cout << "Data loaded successfully!" << std::endl;
 	}
 	else
 		std::cout << "File did not open!" << std::endl;
@@ -1113,6 +1205,13 @@ void Table::execute_proccess()
 		{
 			file_name = this->get_file_name(command_str);
 			this->SAVE(file_name);
+			continue;
+		}
+
+		if (command == "LOAD")
+		{
+			file_name = this->get_file_name(command_str);
+			this->LOAD(file_name);
 			continue;
 		}
 
