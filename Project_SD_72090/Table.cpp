@@ -440,11 +440,20 @@ void Table::PRINT_VAL(const long int row, const long int column)
 
 	if (this->exists(row, column))
 	{
-		if (this->is_absolute(this->get_node(row, column).expression) || this->is_relative(this->get_node(row, column).expression))
+		if (this->is_absolute(this->get_node(row, column).expression))
 		{
 			if (this->get_node(this->get_row(this->get_node(row, column).expression), this->get_column(this->get_node(row, column).expression)).expression[0] == '"')
 			{
 				std::cout << this->get_node(this->get_row(this->get_node(row, column).expression), this->get_column(this->get_node(row, column).expression)).expression;
+				return;
+			}
+		}
+
+		if (this->is_relative(this->get_node(row, column).expression))
+		{
+			if (this->get_node(this->get_row_relative(this->get_node(row, column).expression), this->get_column_relative(this->get_node(row, column).expression)).expression[0] == '"')
+			{
+				std::cout << this->get_node(this->get_row_relative(this->get_node(row, column).expression), this->get_column_relative(this->get_node(row, column).expression)).expression;
 				return;
 			}
 		}
@@ -536,9 +545,17 @@ void Table::increase_by_one(const long int row, const long int column)
 				}
 			}
 
-			this->table[i].value++;
-			std::cout << "Value increased successfully!" << std::endl;
-			return;
+			if (this->table[i].value == (int)this->table[i].value)
+			{
+				this->table[i].value++;
+				std::cout << "Value increased successfully!" << std::endl;
+				return;
+			}
+			else
+			{
+				std::cout << "The value of that box is not a whole number, therefore cannot be increased!" << std::endl;
+				return;
+			}
 		}
 	}
 
@@ -585,9 +602,17 @@ void Table::decrease_by_one(const long int row, const long int column)
 				}
 			}
 
-			this->table[i].value--;
-			std::cout << "Value decreased successfully!" << std::endl;
-			return;
+			if (this->table[i].value == (int)this->table[i].value)
+			{
+				this->table[i].value--;
+				std::cout << "Value decreased successfully!" << std::endl;
+				return;
+			}
+			else
+			{
+				std::cout << "The value of that box is not a whole number, therefore cannot be decreased!" << std::endl;
+				return;
+			}
 		}
 	}
 
