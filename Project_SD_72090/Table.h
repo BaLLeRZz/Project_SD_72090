@@ -27,6 +27,8 @@ public:
 	Node get_node(const long int row, const long int column);
 	const double find_value(const long int row, const long int column) const;
 	const double calculate_value(const string& expr, const string& current_node);
+	const double SUM(const string& str1, const string& str2);
+	const size_t COUNT(const string& str1, const string& str2);
 	void SET(const long int row, const long int column, const string& expr, const string& current_node);
 	void PRINT_VAL(const long int row, const long int column);
 	void PRINT_EXPR(const long int row, const long int column);
@@ -49,6 +51,7 @@ public:
 	const bool check_expression(const string& str) const;
 	const bool is_absolute(const string& str) const;
 	const bool is_relative(const string& str) const;
-	const bool if_function(const string& condition, const int value_true, const int value_false) const;
+	//const bool bool_function(const string& str) const;
+	//const bool if_function(const string& condition, const int value_true, const int value_false);
 	void execute_proccess();
 };

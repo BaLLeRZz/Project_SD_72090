@@ -116,6 +116,14 @@ const double calculate(const double& lvalue, const double& rvalue, const char& o
 		return lvalue;
 	case '^':
 		return pow(lvalue, rvalue);
+	/*case '>':
+		return lvalue > rvalue;
+	case '<':
+		return lvalue < rvalue;
+	case '=':
+		return lvalue == rvalue;
+	case '!':
+		return lvalue != rvalue;*/
 	default:
 		std::cout << "Invalid input!" << std::endl;
 	}
@@ -373,6 +381,312 @@ const double Table::calculate_value(const string& expr, const string& current_no
 	return evaluateRpn(polish_notation);
 }
 
+const double Table::SUM(const string& str1, const string& str2)
+{
+	if (!this->is_absolute(str1))
+	{
+		std::cout << "The first adress must be absolute!" << std::endl;
+		return 0;
+	}
+
+	if (this->is_absolute(str2))
+	{
+		double result{};
+		long int row1{}, row2{}, column1{}, column2{};
+		row1 = this->get_row(str1);
+		column1 = this->get_column(str1);
+		row2 = this->get_row(str2);
+		column2 = this->get_column(str2);
+
+		if (row1 > this->max_rows)
+			this->max_rows = row1;
+
+		if (column1 > this->max_columns)
+			this->max_columns = column1;
+
+		if (row2 > this->max_rows)
+			this->max_rows = row2;
+
+		if (column2 > this->max_columns)
+			this->max_columns = column2;
+
+		if (row1 <= row2)
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for (size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+			else
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+		}
+		else
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+			else
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+		}
+
+		return result;
+	}
+
+	if (this->is_relative(str2))
+	{
+		double result{};
+		long int row1{}, row2{}, column1{}, column2{};
+		row1 = this->get_row(str1);
+		column1 = this->get_column(str1);
+		row2 = this->get_row_relative(str2);
+		column2 = this->get_column_relative(str2);
+		if (row1 + row2 <= 0 || column1 + column2 <= 0)
+		{
+			std::cout << "Invalid row or column input in a relative adress!" << std::endl;
+			return 0;
+		}
+
+		if (row1 > this->max_rows)
+			this->max_rows = row1;
+
+		if (column1 > this->max_columns)
+			this->max_columns = column1;
+
+		if (row1 + row2 > this->max_rows)
+			this->max_rows = row1 + row2;
+
+		if (column1 + column2 > this->max_columns)
+			this->max_columns = column1 + column2;
+
+		if (row1 <= row2)
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for(size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+			else
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+		}
+		else
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+			else
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							result += this->get_node(i, j).value;
+
+				return result;
+			}
+		}
+	}
+
+	std::cout << "Invalid adresses input!" << std::endl;
+	return 0;
+}
+
+const size_t Table::COUNT(const string& str1, const string& str2)
+{
+	if (!this->is_absolute(str1))
+	{
+		std::cout << "The first adress must be absolute!" << std::endl;
+		return 0;
+	}
+
+	if (this->is_absolute(str2))
+	{
+		size_t count{};
+		long int row1{}, row2{}, column1{}, column2{};
+		row1 = this->get_row(str1);
+		column1 = this->get_column(str1);
+		row2 = this->get_row(str2);
+		column2 = this->get_column(str2);
+
+		if (row1 > this->max_rows)
+			this->max_rows = row1;
+
+		if (column1 > this->max_columns)
+			this->max_columns = column1;
+
+		if (row2 > this->max_rows)
+			this->max_rows = row2;
+
+		if (column2 > this->max_columns)
+			this->max_columns = column2;
+
+		if (row1 <= row2)
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for (size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+			else
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+		}
+		else
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+			else
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+		}
+
+		return count;
+	}
+
+	if (this->is_relative(str2))
+	{
+		size_t count{};
+		long int row1{}, row2{}, column1{}, column2{};
+		row1 = this->get_row(str1);
+		column1 = this->get_column(str1);
+		row2 = this->get_row_relative(str2);
+		column2 = this->get_column_relative(str2);
+		if (row1 + row2 <= 0 || column1 + column2 <= 0)
+		{
+			std::cout << "Invalid row or column input in a relative adress!" << std::endl;
+			return 0;
+		}
+
+		if (row1 > this->max_rows)
+			this->max_rows = row1;
+
+		if (column1 > this->max_columns)
+			this->max_columns = column1;
+
+		if (row1 + row2 > this->max_rows)
+			this->max_rows = row1 + row2;
+
+		if (column1 + column2 > this->max_columns)
+			this->max_columns = column1 + column2;
+
+		if (row1 <= row2)
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for (size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+			else
+			{
+				for (size_t i = row1; i <= row2; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+		}
+		else
+		{
+			if (column1 <= column2)
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column1; j <= column2; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+			else
+			{
+				for (size_t i = row2; i <= row1; i++)
+					for (size_t j = column2; j <= column1; j++)
+						if (this->exists(i, j))
+							if (this->get_node(i, j).expression != "0")
+								count++;
+
+				return count;
+			}
+		}
+	}
+
+	std::cout << "Invalid adresses input!" << std::endl;
+	return 0;
+}
+
 void Table::SET(const long int row, const long int column, const string& expr, const string& current_node)
 {
 	if (row <= 0 || column <= 0)
@@ -407,13 +721,8 @@ void Table::SET(const long int row, const long int column, const string& expr, c
 		}
 	}
 
-	if (changed_value)
-	{
-		for (size_t i = 0; i < size; i++)
-			this->table[i].value = this->calculate_value(this->table[i].expression, "R" + std::to_string(this->table[i].row) + "C" + std::to_string(this->table[i].column));
-
-		return;
-	}
+	for (size_t i = 0; i < size; i++)
+		this->table[i].value = this->calculate_value(this->table[i].expression, "R" + std::to_string(this->table[i].row) + "C" + std::to_string(this->table[i].column));
 
 	Node node;
 	node.row = row;
@@ -998,7 +1307,7 @@ const bool Table::check_expression(const string& str) const
 
 	for (size_t i = 0; i < size; i++)
 		if (!isDigit(str[i]) && str[i] != ' ' && str[0] != '"' && str[i] != '[' && str[i] != ']')
-			if (str[i] != 'R' && str[i] != 'C' && str[i] != '(' && str[i] != ')')
+			if (str[i] != 'R' && str[i] != 'C' && str[i] != '(' && str[i] != ')' && str[i] != '>' && str[i] != '<')
 				if (str[i] != '+' && str[i] != '-' && str[i] != '*' && str[i] != '/' && str[i] != '^')
 					return false;
 
@@ -1101,10 +1410,31 @@ const bool Table::is_relative(const string& str) const
 	return true;
 }
 
-//const bool Table::if_function(const string& condition, const int value_true, const int value_false) const
+//const bool Table::bool_function(const string& str) const
+//{
+//	size_t size = str.size();
+//	if (size < 5)
+//		return false;
+//
+//	if (str[0] == 'I' && str[1] == 'F' && str[2] == '(' && str[size - 1] == ')')
+//		return true;
+//
+//	if (str[0] == 'A' && str[1] == 'N' && str[2] == 'D' && str[3] == '(' && str[size - 1] == ')')
+//		return true;
+//
+//	if (str[0] == 'N' && str[1] == 'O' && str[2] == 'T' && str[3] == '(' && str[size - 1] == ')')
+//		return true;
+//
+//	if (str[0] == 'O' && str[1] == 'R' && str[2] == '(' && str[size - 1] == ')')
+//		return true;
+//
+//	return false;
+//}
+
+//const bool Table::if_function(const string& condition, const int value_true, const int value_false)
 //{
 //	// if (a < b; 2; 3)
-//
+//	if (this->calculate_value())
 //}
 
 void Table::execute_proccess()
@@ -1134,8 +1464,11 @@ void Table::execute_proccess()
 			std::cout << "> PRINT EXPR <adress>\n";
 			std::cout << "> PRINT VAL ALL\n";
 			std::cout << "> PRINT EXPR ALL\n";
+			std::cout << "> SAVE <file name>\n";
+			std::cout << "> LOAD <file name>\n";
 			std::cout << "> ++ <adress>\n";
 			std::cout << "> -- <adress>\n";
+			std::cout << "> SUM <adress1> <adress2>\n";
 			continue;
 		}
 
@@ -1240,6 +1573,18 @@ void Table::execute_proccess()
 			row = this->get_row(adress);
 			column = this->get_column(adress);
 			this->decrease_by_one(row, column);
+			continue;
+		}
+
+		if (command == "SUM")
+		{
+			std::cout << this->SUM(command2, command3) << std::endl;
+			continue;
+		}
+
+		if (command == "COUNT")
+		{
+			std::cout << this->COUNT(command2, command3) << std::endl;
 			continue;
 		}
 
