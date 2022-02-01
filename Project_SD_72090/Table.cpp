@@ -116,14 +116,6 @@ const double calculate(const double& lvalue, const double& rvalue, const char& o
 		return lvalue;
 	case '^':
 		return pow(lvalue, rvalue);
-	/*case '>':
-		return lvalue > rvalue;
-	case '<':
-		return lvalue < rvalue;
-	case '=':
-		return lvalue == rvalue;
-	case '!':
-		return lvalue != rvalue;*/
 	default:
 		std::cout << "Invalid input!" << std::endl;
 	}
@@ -1409,33 +1401,6 @@ const bool Table::is_relative(const string& str) const
 
 	return true;
 }
-
-//const bool Table::bool_function(const string& str) const
-//{
-//	size_t size = str.size();
-//	if (size < 5)
-//		return false;
-//
-//	if (str[0] == 'I' && str[1] == 'F' && str[2] == '(' && str[size - 1] == ')')
-//		return true;
-//
-//	if (str[0] == 'A' && str[1] == 'N' && str[2] == 'D' && str[3] == '(' && str[size - 1] == ')')
-//		return true;
-//
-//	if (str[0] == 'N' && str[1] == 'O' && str[2] == 'T' && str[3] == '(' && str[size - 1] == ')')
-//		return true;
-//
-//	if (str[0] == 'O' && str[1] == 'R' && str[2] == '(' && str[size - 1] == ')')
-//		return true;
-//
-//	return false;
-//}
-
-//const bool Table::if_function(const string& condition, const int value_true, const int value_false)
-//{
-//	// if (a < b; 2; 3)
-//	if (this->calculate_value())
-//}
 
 void Table::execute_proccess()
 {

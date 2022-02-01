@@ -51,7 +51,5 @@ public:
 	const bool check_expression(const string& str) const;
 	const bool is_absolute(const string& str) const;
 	const bool is_relative(const string& str) const;
-	//const bool bool_function(const string& str) const;
-	//const bool if_function(const string& condition, const int value_true, const int value_false);
 	void execute_proccess();
 };
